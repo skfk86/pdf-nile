@@ -52,7 +52,7 @@ jobs:
               by[i.get('id')].append(f"{f}:{ln} {i.get('message')[:90]}")
           for k,v in by.items():
               body="%0A".join(v)[:30000]
-              print(f"::notice title=LINTDETAIL {k}::{body}")
+              print(f"::warning title=LINTDETAIL {k}::{body}")
           PY
           fi
           exit 0
