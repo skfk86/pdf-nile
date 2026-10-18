@@ -228,7 +228,6 @@ dependencies {
     testImplementation("net.sf.kxml:kxml2:2.3.0")
 
     // Optional Office engine (powered by LibreOffice) — installer differs per distribution.
-    "playImplementation"(libs.play.feature.delivery.ktx)
     "fossImplementation"(libs.androidx.work.runtime.ktx)
     "fossImplementation"(libs.xz)
 }
