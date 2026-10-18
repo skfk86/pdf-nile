@@ -5,6 +5,8 @@ import android.net.Uri
 import com.kyant.pdfcore.internal.PdfBox
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream
+import com.tom_roush.pdfbox.pdmodel.font.PDFont
+import com.tom_roush.pdfbox.pdmodel.font.PDType0Font
 import com.tom_roush.pdfbox.pdmodel.font.PDType1Font
 import com.tom_roush.pdfbox.pdmodel.graphics.state.RenderingMode
 import com.tom_roush.pdfbox.util.Matrix
@@ -33,10 +35,16 @@ object PdfSearchableStamper {
         wordsByPage: Map<Int, List<InvisibleWord>>
     ) {
         PdfBox.ensureInitialized(context)
-        val font = PDType1Font.HELVETICA
+        val latinFont: PDFont = PDType1Font.HELVETICA
 
         context.contentResolver.openInputStream(sourceUri)?.use { input ->
             PDDocument.load(input).use { doc ->
+                // Embedded Unicode font (Tajawal, OFL) for Arabic / non-Latin-1 words; loaded lazily.
+                val unicodeFont: PDFont? by lazy {
+                    runCatching {
+                        context.assets.open("fonts/Tajawal-Regular.ttf").use { PDType0Font.load(doc, it) }
+                    }.getOrNull()
+                }
                 for ((pageIndex, words) in wordsByPage) {
                     if (words.isEmpty() || pageIndex !in 0 until doc.numberOfPages) continue
                     val page = doc.getPage(pageIndex)
@@ -49,7 +57,10 @@ object PdfSearchableStamper {
 
                     PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, true, true).use { cs ->
                         words.forEach word@{ word ->
-                            val sanitized = sanitize(word.text)
+                            val needsUnicode = word.text.any { it.code > 255 }
+                            val uni = if (needsUnicode) unicodeFont else null
+                            val font: PDFont = uni ?: latinFont
+                            val sanitized = if (uni != null) sanitizeUnicode(uni, word.text) else sanitize(word.text)
                             if (sanitized.isBlank()) return@word
                             val wordWpt = ((word.right - word.left) * w).coerceAtLeast(0.01f)
                             val wordHpt = ((word.bottom - word.top) * h).coerceAtLeast(0.01f)
@@ -84,4 +95,13 @@ object PdfSearchableStamper {
     /** PDFBox's WinAnsi encoding rejects unsupported glyphs; keep to Latin-1 (mirrors PdfWatermarker). */
     private fun sanitize(text: String): String =
         buildString { text.forEach { ch -> append(if (ch.code in 32..255) ch else ' ') } }.trim()
+
+    /** Keeps only characters the embedded font can encode (logical order is preserved for extraction). */
+    private fun sanitizeUnicode(font: PDFont, text: String): String =
+        buildString {
+            text.forEach { ch ->
+                val ok = ch == ' ' || runCatching { font.encode(ch.toString()) }.isSuccess
+                append(if (ok) ch else ' ')
+            }
+        }.trim()
 }

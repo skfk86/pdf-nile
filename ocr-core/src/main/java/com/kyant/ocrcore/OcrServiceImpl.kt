@@ -19,6 +19,10 @@ class OcrServiceImpl(
     @Volatile private var primaryKnownBroken = false
 
     override suspend fun recognize(context: Context, bitmap: Bitmap): OcrPageResult {
+        // Arabic: ML Kit's bundled model is Latin-only, so go straight to Tesseract (ara+eng).
+        if (ArabicOcrMode.isEnabled(context) && TesseractOcrEngine.hasArabicModel(context)) {
+            return TesseractOcrEngine.recognize(context, bitmap, arabic = true)
+        }
         val engine = primary
         if (engine != null && !primaryKnownBroken) {
             runCatching { engine(bitmap) }

@@ -15,26 +15,35 @@ import kotlinx.coroutines.withContext
  * Bundles `eng.traineddata` as a module asset so the fallback never needs a download.
  */
 internal object TesseractOcrEngine {
-    private const val LANG = "eng"
+    private const val LANG_LATIN = "eng"
+    private const val LANG_ARABIC = "ara+eng"
 
-    /** Copies the bundled trained-data asset into app-private storage on first use.
+    /** True when the Arabic model was bundled into the app (ara.traineddata asset). */
+    fun hasArabicModel(context: Context): Boolean =
+        runCatching { context.assets.list("tessdata")?.contains("ara.traineddata") == true }.getOrDefault(false)
+
+    /** Copies every bundled trained-data asset into app-private storage on first use.
      *  Returns the data-path directory to pass to [TessBaseAPI.init] (the parent of "tessdata/"). */
     private fun ensureTrainedData(context: Context): File {
         val tessdataDir = File(context.filesDir, "tesseract/tessdata").apply { mkdirs() }
-        val dest = File(tessdataDir, "$LANG.traineddata")
-        if (!dest.exists() || dest.length() == 0L) {
-            context.assets.open("tessdata/$LANG.traineddata").use { input ->
-                dest.outputStream().use { output -> input.copyTo(output) }
+        val names = context.assets.list("tessdata").orEmpty().filter { it.endsWith(".traineddata") }
+        for (name in names) {
+            val dest = File(tessdataDir, name)
+            if (!dest.exists() || dest.length() == 0L) {
+                context.assets.open("tessdata/$name").use { input ->
+                    dest.outputStream().use { output -> input.copyTo(output) }
+                }
             }
         }
         return tessdataDir.parentFile!!
     }
 
-    suspend fun recognize(context: Context, bitmap: Bitmap): OcrPageResult = withContext(Dispatchers.Default) {
+    suspend fun recognize(context: Context, bitmap: Bitmap, arabic: Boolean = false): OcrPageResult = withContext(Dispatchers.Default) {
         val dataDir = ensureTrainedData(context)
+        val lang = if (arabic && hasArabicModel(context)) LANG_ARABIC else LANG_LATIN
         val api = TessBaseAPI()
         try {
-            check(api.init(dataDir.absolutePath, LANG)) { "Tesseract init failed for $LANG" }
+            check(api.init(dataDir.absolutePath, lang)) { "Tesseract init failed for $lang" }
             api.setImage(bitmap)
             api.getUTF8Text() // triggers recognition; result consumed via the iterator below
 
@@ -68,7 +77,7 @@ internal object TesseractOcrEngine {
                     it.delete()
                 }
             }
-            OcrPageResult(words, engineUsed = "tesseract")
+            OcrPageResult(words, engineUsed = if (lang == LANG_ARABIC) "tesseract-ara" else "tesseract")
         } finally {
             api.recycle()
         }
