@@ -98,6 +98,12 @@ android {
     productFlavors {
         create("play") {
             dimension = "distribution"
+            // The :office_engine feature ships only arm64-v8a + armeabi-v7a, and bundletool
+            // requires every module with native libs to support the same ABIs. Covers virtually
+            // all phones; applied for bundle builds only (abiFilters conflict with APK splits).
+            if (gradle.startParameter.taskNames.any { it.contains("bundle", ignoreCase = true) }) {
+                ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
+            }
         }
         create("foss") {
             dimension = "distribution"
