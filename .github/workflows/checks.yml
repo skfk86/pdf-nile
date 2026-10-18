@@ -44,11 +44,15 @@ jobs:
           errs=[i for i in r.findall('issue') if i.get('severity') in ('Error','Fatal')]
           c=collections.Counter(i.get('id') for i in errs)
           print("::notice::LINT BY ID " + ", ".join(f"{k}={v}" for k,v in c.most_common()))
-          for i in errs[:80]:
+          by=collections.defaultdict(list)
+          for i in errs:
               loc=i.find('location')
-              f=(loc.get('file') or '').split('/')[-1] if loc is not None else ''
+              f=(loc.get('file') or '').split('/java/')[-1] if loc is not None else ''
               ln=loc.get('line') if loc is not None else ''
-              print(f"::notice::LINTERR {i.get('id')} {f}:{ln} {i.get('message')[:110]}")
+              by[i.get('id')].append(f"{f}:{ln} {i.get('message')[:90]}")
+          for k,v in by.items():
+              body="%0A".join(v)[:30000]
+              print(f"::notice title=LINTDETAIL {k}::{body}")
           PY
           fi
           exit 0
