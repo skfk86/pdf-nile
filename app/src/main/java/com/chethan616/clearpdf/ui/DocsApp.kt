@@ -157,7 +157,7 @@ fun DocsApp(shortcutRoute: String? = null, incomingPdfUri: android.net.Uri? = nu
     val openRepo = remember(context) {
         {
             runCatching {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(GitHubStarPromptManager.REPO_URL)).apply {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(GitHubStarPromptManager.RATE_URL)).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
                 context.startActivity(intent)

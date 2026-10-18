@@ -547,9 +547,9 @@
     <string name="file_type_powerpoint">PowerPoint</string>
     <string name="file_type_images">صور</string>
     <string name="file_type_txt">TXT</string>
-    <string name="star_prompt_title">ادعم ClearPDF</string>
-    <string name="star_prompt_message">ClearPDF مفتوح المصدر على GitHub.\nهل تود وضع نجمة للمشروع؟</string>
-    <string name="star_prompt_accept">نعم، ضع نجمة</string>
+    <string name="star_prompt_title">قيّم PDF Nile</string>
+    <string name="star_prompt_message">هل أعجبك PDF Nile؟\nتقييمك على Google Play يساعد الآخرين على اكتشافه.</string>
+    <string name="star_prompt_accept">قيّم التطبيق</string>
     <string name="star_prompt_later">ليس الآن</string>
     <string name="star_prompt_never">لا تسأل مجددًا</string>
     <string name="operation_failed">حدث خطأ ما. يُرجى المحاولة مرة أخرى.</string>

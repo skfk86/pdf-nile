@@ -47,7 +47,8 @@ ClearPDF uses open-source components and keeps their notices with the project. R
 
 - Artifact: `cz.adaptech.tesseract4android:tesseract4android:4.9.0` (Copyright 2019 Adaptech s.r.o., Robert Pösel)
 - License: Apache License 2.0 (wraps the Tesseract OCR engine, also Apache-2.0, and the Leptonica imaging library, BSD-2-Clause)
-- Use: fully open-source, offline OCR fallback (`ocr-core` module) used when the bundled ML Kit engine fails to initialize or recognize on a given device. Bundles `eng.traineddata` (English) as a module asset so the fallback needs no download.
+- Use: fully open-source, offline OCR fallback (`ocr-core` module) used when the bundled ML Kit engine fails to initialize or recognize on a given device. Bundles `eng.traineddata` (English) and `ara.traineddata` (Arabic) as module assets so OCR needs no download. PDF Nile uses `ara+eng` whenever the app language is Arabic.
+- Arabic model: `ara.traineddata` from https://github.com/tesseract-ocr/tessdata_fast (tag 4.1.0), Apache License 2.0. SHA-256 recorded in `ASSETS.sha256`.
 - Notice practice: keep the Apache 2.0 license text and the BSD-2-Clause Leptonica notice available with redistributed builds.
 
 ## Feature-set inspiration — Pdf_Tools
@@ -112,7 +113,9 @@ The app does not bundle GPL or LGPL components for document rendering. If a futu
 - Algorithm by Mario Klingemann (public domain), re-implemented in `imageeditor/engine/BlurUtils.kt`
   as the pre-Android-12 fallback for the blur brush.
 
-## LibreOffice (optional Office engine)
+## LibreOffice (optional Office engine) — REMOVED in PDF Nile
+
+> PDF Nile does not ship or download the Office engine; the `:office_engine` module and its binaries were removed. The section below describes the upstream ClearPDF project only.
 
 - What: "Office engine (powered by LibreOffice)" — a prebuilt LibreOfficeKit bundle for Android
   (`liblo-native-code.so`, `libc++_shared.so` and the LibreOffice runtime tree). It is **not in the
@@ -158,3 +161,14 @@ The app does not bundle GPL or LGPL components for document rendering. If a futu
   NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
   DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
   OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+## Tajawal font
+
+- Source: https://github.com/google/fonts/tree/main/ofl/tajawal (Copyright The Tajawal Project Authors).
+- License: SIL Open Font License 1.1.
+- Use: embedded into searchable-PDF text layers so Arabic OCR text is stored as real Unicode (`app/src/main/assets/fonts/Tajawal-Regular.ttf`), and bundled as `res/font/tajawal_*.ttf`.
+- Notice practice: the font is redistributed unmodified; keep the OFL text available with redistributed builds.
+
+## ClearPDF (upstream)
+
+- PDF Nile is a modified version of ClearPDF, https://github.com/Chethan616/ClearPDF, Copyright (c) 2026 Chethan616, MIT License (see `LICENSE`). The original copyright and license notice must be kept in all copies.
