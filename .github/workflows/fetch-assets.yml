@@ -1,0 +1,36 @@
+name: Fetch OCR model and fonts (one-time)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Arabic OCR model and fonts
+        run: |
+          set -euo pipefail
+          mkdir -p ocr-core/src/main/assets/tessdata app/src/main/res/font app/src/main/assets/fonts
+          # Tesseract "fast" Arabic LSTM model (Apache-2.0), pinned tag
+          curl -fL --retry 3 -o ocr-core/src/main/assets/tessdata/ara.traineddata \
+            https://github.com/tesseract-ocr/tessdata_fast/raw/4.1.0/ara.traineddata
+          # Tajawal (SIL OFL 1.1) - UI font and PDF text-layer font
+          curl -fL --retry 3 -o app/src/main/res/font/tajawal_regular.ttf \
+            https://github.com/google/fonts/raw/main/ofl/tajawal/Tajawal-Regular.ttf
+          curl -fL --retry 3 -o app/src/main/res/font/tajawal_bold.ttf \
+            https://github.com/google/fonts/raw/main/ofl/tajawal/Tajawal-Bold.ttf
+          cp app/src/main/res/font/tajawal_regular.ttf app/src/main/assets/fonts/Tajawal-Regular.ttf
+          ls -l ocr-core/src/main/assets/tessdata app/src/main/res/font app/src/main/assets/fonts
+          sha256sum ocr-core/src/main/assets/tessdata/ara.traineddata app/src/main/res/font/*.ttf > ASSETS.sha256
+          test "$(stat -c%s ocr-core/src/main/assets/tessdata/ara.traineddata)" -gt 500000
+      - name: Commit assets
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add ocr-core app ASSETS.sha256
+          git commit -m "Add Arabic OCR model (Tesseract fast ara) and Tajawal font (OFL)"
+          git push
