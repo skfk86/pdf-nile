@@ -98,12 +98,6 @@ android {
     productFlavors {
         create("play") {
             dimension = "distribution"
-            // The :office_engine feature ships only arm64-v8a + armeabi-v7a, and bundletool
-            // requires every module with native libs to support the same ABIs. Covers virtually
-            // all phones; applied for bundle builds only (abiFilters conflict with APK splits).
-            if (gradle.startParameter.taskNames.any { it.contains("bundle", ignoreCase = true) }) {
-                ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
-            }
         }
         create("foss") {
             dimension = "distribution"
@@ -124,12 +118,6 @@ android {
     sourceSets {
         getByName("play").kotlin.srcDir("src/gms/java")
         getByName("foss").kotlin.srcDir("src/gms/java")
-    }
-    // AGP can't link a dynamic feature against ABI-split APK outputs, and the feature is only
-    // ever delivered through a Play bundle anyway — so register it for bundle builds only.
-    // APK builds (sideload/foss) simply don't contain it; the play installer then falls back.
-    if (gradle.startParameter.taskNames.any { it.contains("bundle", ignoreCase = true) }) {
-        dynamicFeatures += setOf(":office_engine")
     }
     // Bundling on-device OCR (bundled ML Kit + Tesseract4Android) added native .so libs for
     // 4 CPU architectures; without splitting, every install carries all 4. This produces one

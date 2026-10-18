@@ -28,7 +28,8 @@ import java.util.zip.ZipFile
  * ~190 MB library is not kept twice.
  */
 internal object OfficeEngineFlavor {
-    const val available: Boolean = true
+    // Office engine removed from PDF Nile: third-party LibreOffice binaries are not shipped.
+    const val available: Boolean = false
     fun createInstaller(context: Context): OfficeEngineInstaller = PlayOfficeEngineInstaller(context)
 }
 
