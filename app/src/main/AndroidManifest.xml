@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- A bundled library merges READ_PHONE_STATE (telemetry only); PDF Nile never reads phone state. -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" tools:node="remove" />
     <!-- Camera permission for document scanning -->
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- The main manifest does not declare INTERNET. Bundled libraries may contribute it when
