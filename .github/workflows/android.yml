@@ -26,8 +26,16 @@ jobs:
       - name: Build play release (APK)
         run: ./gradlew :app:assemblePlayRelease --stacktrace -Dorg.gradle.jvmargs="-Xmx4g -Dfile.encoding=UTF-8" -Pkotlin.daemon.jvmargs=-Xmx4g
       - name: Build play release (AAB)
-        run: ./gradlew :app:bundlePlayRelease --stacktrace -Dorg.gradle.jvmargs="-Xmx4g -Dfile.encoding=UTF-8" -Pkotlin.daemon.jvmargs=-Xmx4g
+        run: |
+          set +e
+          ./gradlew :app:bundlePlayRelease --stacktrace -Dorg.gradle.jvmargs="-Xmx4g -Dfile.encoding=UTF-8" -Pkotlin.daemon.jvmargs=-Xmx4g > aab.log 2>&1
+          code=$?
+          if [ $code -ne 0 ]; then
+            grep -nE "What went wrong|Execution failed|error:|e: |FAILURE|Caused by|Could not|No matching|not found" aab.log | head -15 | while IFS= read -r line; do echo "::error::${line:0:400}"; done
+          fi
+          exit $code
       - name: Upload APKs
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pdf-nile-play-apk
