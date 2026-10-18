@@ -1,9 +1,10 @@
-name: Android build
+name: PDF Nile build (play flavor)
 
 on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -22,14 +23,19 @@ jobs:
           cache: gradle
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
-      - name: Build release variant
-        # Three flavors (play, foss, fdroid) compile in one Kotlin daemon; its default 2 GB heap ran
-        # out (GC overhead limit). The runner has 16 GB, so give Gradle and Kotlin 4 GB each.
-        run: ./gradlew assembleRelease --stacktrace -Dorg.gradle.jvmargs="-Xmx4g -Dfile.encoding=UTF-8" -Pkotlin.daemon.jvmargs=-Xmx4g
-      - name: Upload release APK
+      - name: Build play release (APK)
+        run: ./gradlew :app:assemblePlayRelease --stacktrace -Dorg.gradle.jvmargs="-Xmx4g -Dfile.encoding=UTF-8" -Pkotlin.daemon.jvmargs=-Xmx4g
+      - name: Build play release (AAB)
+        run: ./gradlew :app:bundlePlayRelease --stacktrace -Dorg.gradle.jvmargs="-Xmx4g -Dfile.encoding=UTF-8" -Pkotlin.daemon.jvmargs=-Xmx4g
+      - name: Upload APKs
         uses: actions/upload-artifact@v4
         with:
-          name: clearpdf-release-apk
-          # Product flavors (foss / play) put APKs under apk/<flavor>/release/.
-          path: app/build/outputs/apk/*/release/*.apk
+          name: pdf-nile-play-apk
+          path: app/build/outputs/apk/play/release/*.apk
+          if-no-files-found: error
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf-nile-play-aab
+          path: app/build/outputs/bundle/playRelease/*.aab
           if-no-files-found: error
