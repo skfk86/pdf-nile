@@ -981,7 +981,7 @@ class PdfViewerViewModel(private val openPdfUseCase: OpenPdfUseCase) : ViewModel
             when (overlay) {
                 is ExportOverlay.Stroke -> {
                     if (overlay.points.size < 2) return
-                    val c = android.graphics.Color.valueOf(overlay.colorArgb)
+                    val c = RgbFloats(overlay.colorArgb)
                     cs.saveGraphicsState()
                     val gs = com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState()
                     gs.strokingAlphaConstant = overlay.alpha
@@ -999,7 +999,7 @@ class PdfViewerViewModel(private val openPdfUseCase: OpenPdfUseCase) : ViewModel
                 }
 
                 is ExportOverlay.RectShape -> {
-                    val c = android.graphics.Color.valueOf(overlay.colorArgb)
+                    val c = RgbFloats(overlay.colorArgb)
                     val x1 = nx(minOf(overlay.start.x, overlay.end.x))
                     val y1 = ny(maxOf(overlay.start.y, overlay.end.y))
                     val w = abs(nx(overlay.end.x) - nx(overlay.start.x))
@@ -1023,7 +1023,7 @@ class PdfViewerViewModel(private val openPdfUseCase: OpenPdfUseCase) : ViewModel
                 }
 
                 is ExportOverlay.OvalShape -> {
-                    val c = android.graphics.Color.valueOf(overlay.colorArgb)
+                    val c = RgbFloats(overlay.colorArgb)
                     val cx = nx((overlay.start.x + overlay.end.x) / 2f)
                     val cy = ny((overlay.start.y + overlay.end.y) / 2f)
                     val rx = abs(nx(overlay.end.x) - nx(overlay.start.x)) / 2f
@@ -1057,7 +1057,7 @@ class PdfViewerViewModel(private val openPdfUseCase: OpenPdfUseCase) : ViewModel
                 }
 
                 is ExportOverlay.LineShape -> {
-                    val c = android.graphics.Color.valueOf(overlay.colorArgb)
+                    val c = RgbFloats(overlay.colorArgb)
                     val x1 = nx(overlay.start.x); val y1 = ny(overlay.start.y)
                     val x2 = nx(overlay.end.x);   val y2 = ny(overlay.end.y)
                     cs.saveGraphicsState()
@@ -1100,7 +1100,7 @@ class PdfViewerViewModel(private val openPdfUseCase: OpenPdfUseCase) : ViewModel
 
                 is ExportOverlay.TextStamp -> {
                     if (overlay.text.isBlank()) return
-                    val c = android.graphics.Color.valueOf(overlay.colorArgb)
+                    val c = RgbFloats(overlay.colorArgb)
                     val font = com.tom_roush.pdfbox.pdmodel.font.PDType1Font.HELVETICA
                     val size = (overlay.fontSizeNorm * pageH).coerceIn(4f, pageH)
                     val leading = size * 1.2f
@@ -1127,7 +1127,7 @@ class PdfViewerViewModel(private val openPdfUseCase: OpenPdfUseCase) : ViewModel
 
                 is ExportOverlay.NoteStamp -> {
                     // A real, clickable PDF sticky-note annotation.
-                    val c = android.graphics.Color.valueOf(overlay.colorArgb)
+                    val c = RgbFloats(overlay.colorArgb)
                     val note = com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationText()
                     note.setContents(overlay.text)
                     note.name = com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationText.NAME_NOTE
@@ -1262,3 +1262,13 @@ internal fun pageContentBounds(page: Bitmap): android.graphics.RectF? = runCatch
     if (top < 0 || left < 0 || bottom <= top || right <= left) return null
     android.graphics.RectF(left / sw.toFloat(), top / sh.toFloat(), (right + 1) / sw.toFloat(), (bottom + 1) / sh.toFloat())
 }.getOrNull()
+
+/** API-23-safe replacement for `Color.valueOf` (API 26): ARGB int -> 0..1 RGB components. */
+private class RgbFloats(argb: Int) {
+    private val r = ((argb shr 16) and 0xFF) / 255f
+    private val g = ((argb shr 8) and 0xFF) / 255f
+    private val b = (argb and 0xFF) / 255f
+    fun red() = r
+    fun green() = g
+    fun blue() = b
+}

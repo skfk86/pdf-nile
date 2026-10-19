@@ -2601,7 +2601,7 @@ fun PdfViewerScreen(
                 runCatching {
                     val safeBmp = when {
                         bmp.isRecycled -> null
-                        bmp.config == Bitmap.Config.HARDWARE || !bmp.isMutable -> bmp.copy(Bitmap.Config.ARGB_8888, true)
+                        (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O && bmp.config == Bitmap.Config.HARDWARE) || !bmp.isMutable -> bmp.copy(Bitmap.Config.ARGB_8888, true)
                         else -> bmp
                     }
                     if (safeBmp != null && safeBmp.width > 0 && safeBmp.height > 0) {

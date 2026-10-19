@@ -284,7 +284,7 @@
     <string name="feature_tools_desc">Combina, divide, comprime y convierte</string>
     <string name="onboarding_ready_title">¡Todo listo! &#127881;</string>
     <string name="onboarding_ready_subtitle">PDF Nile está listo para usarse.\nTodos tus documentos, siempre privados.</string>
-    <string name="onboarding_privacy_badge">100% sin conexión &#183; Sin recopilación de datos &#183; Código abierto</string>
+    <string name="onboarding_privacy_badge" formatted="false">100% sin conexión &#183; Sin recopilación de datos &#183; Código abierto</string>
 
     <!-- Común -->
     <string name="back">Atrás</string>
